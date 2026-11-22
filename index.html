@@ -195,7 +195,7 @@
 
       <div id="paso2" class="listo" hidden>
         <h2 tabindex="-1" id="tituloListo">Último paso</h2>
-        <p>Toca el botón verde para enviarle tu mensaje a Natalia por WhatsApp. El mensaje ya va escrito con tu nombre y tus números.</p>
+        <p id="textoListo"></p>
         <p style="font-size:.9rem">Después paga <strong id="totalListo"></strong> a Nequi <strong>311 809 8076</strong> y enviar el comprobante por el mismo chat.</p>
         <div class="acciones">
           <a class="btn wa" id="linkWa" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
@@ -207,43 +207,53 @@
 </div>
 
 <script>
-  // Números ya vendidos. Para actualizar, edita esta lista.
+  // URL de la aplicación web de Google Apps Script (termina en /exec).
+  const SCRIPT_URL = "";
+  // Respaldo por si no hay conexión con la hoja.
   const VENDIDOS = [4,5,7,8,11,12,13,14,17,24,45,66,71,73,78,83,86,89];
   const WHATSAPP = "573118098076";
   const PRECIO = 10000;
 
-  const vendidos = new Set(VENDIDOS);
+  let vendidos = new Set(VENDIDOS);
   const elegidos = new Set();
   const $ = id => document.getElementById(id);
   const dos = n => String(n).padStart(2,"0");
   const pesos = n => "$" + n.toLocaleString("es-CO");
 
   const grid = $("grid");
+  const botones = [];
   for (let i = 0; i < 100; i++) {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "num";
-    b.textContent = dos(i);
-    b.dataset.n = i;
-    if (vendidos.has(i)) {
-      b.disabled = true;
-      b.textContent = "\u{1F917}";
-      b.setAttribute("aria-label", "Número " + dos(i) + ", ya vendido");
-    } else {
-      b.setAttribute("aria-pressed", "false");
-      b.setAttribute("aria-label", "Número " + dos(i) + ", libre");
-      b.addEventListener("click", () => alternar(i, b));
-    }
+    b.addEventListener("click", () => { if (!vendidos.has(i)) alternar(i); });
     grid.appendChild(b);
+    botones.push(b);
   }
-  $("contador").textContent = (100 - vendidos.size) + " números libres de 100";
 
-  function alternar(i, b) {
-    if (elegidos.has(i)) elegidos.delete(i); else elegidos.add(i);
-    const on = elegidos.has(i);
-    b.setAttribute("aria-pressed", on ? "true" : "false");
-    b.setAttribute("aria-label", "Número " + dos(i) + (on ? ", elegido" : ", libre"));
+  function pintarGrid() {
+    botones.forEach((b, i) => {
+      if (vendidos.has(i)) {
+        elegidos.delete(i);
+        b.disabled = true;
+        b.textContent = "\u{1F917}";
+        b.removeAttribute("aria-pressed");
+        b.setAttribute("aria-label", "Número " + dos(i) + ", ya vendido");
+      } else {
+        const on = elegidos.has(i);
+        b.disabled = false;
+        b.textContent = dos(i);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+        b.setAttribute("aria-label", "Número " + dos(i) + (on ? ", elegido" : ", libre"));
+      }
+    });
+    $("contador").textContent = (100 - vendidos.size) + " números libres de 100";
     pintarBarra();
+  }
+
+  function alternar(i) {
+    if (elegidos.has(i)) elegidos.delete(i); else elegidos.add(i);
+    pintarGrid();
   }
 
   function lista() { return [...elegidos].sort((a,b)=>a-b).map(dos); }
@@ -253,6 +263,19 @@
     $("barra").classList.toggle("visible", n > 0);
     if (n) $("barraTxt").innerHTML = "<strong>" + (n === 1 ? "1 número" : n + " números") + "</strong><br>" + lista().join(", ") + " · " + pesos(n * PRECIO);
   }
+
+  async function cargar() {
+    if (!SCRIPT_URL) return;
+    try {
+      const r = await fetch(SCRIPT_URL + "?t=" + Date.now());
+      const d = await r.json();
+      if (d.ok && Array.isArray(d.ocupados)) { vendidos = new Set(d.ocupados.map(Number)); pintarGrid(); }
+    } catch (e) {}
+  }
+
+  pintarGrid();
+  cargar();
+  setInterval(() => { if (!$("fondo").classList.contains("abierto")) cargar(); }, 30000);
 
   let ultimoFoco = null;
   function abrir() {
@@ -265,7 +288,7 @@
   }
   function cerrar() {
     $("fondo").classList.remove("abierto");
-    if (ultimoFoco) ultimoFoco.focus();
+    if (ultimoFoco && document.body.contains(ultimoFoco)) ultimoFoco.focus();
   }
 
   $("btnApartar").addEventListener("click", abrir);
@@ -273,36 +296,67 @@
   $("fondo").addEventListener("click", e => { if (e.target === $("fondo")) cerrar(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && $("fondo").classList.contains("abierto")) cerrar(); });
 
-  $("form").addEventListener("submit", e => {
+  let enviando = false;
+  $("form").addEventListener("submit", async e => {
     e.preventDefault();
+    if (enviando) return;
     const nombre = $("nombre").value.trim();
     const cel = $("cel").value.trim();
     if (nombre.length < 3) { $("err").textContent = "Escribe tu nombre para poder apartar."; $("nombre").focus(); return; }
-    const nums = lista();
+    const numeros = [...elegidos].sort((a,b)=>a-b);
+    const nums = numeros.map(dos);
     const total = pesos(nums.length * PRECIO);
-    let msg = "Hola Natalia, quiero apartar " + (nums.length === 1 ? "el número " : "los números ") + nums.join(", ") +
+    const btn = $("form").querySelector('button[type="submit"]');
+
+    if (SCRIPT_URL) {
+      enviando = true; btn.disabled = true; btn.lastChild.textContent = " Apartando...";
+      $("err").textContent = "";
+      try {
+        const r = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ nombre, cel, numeros })
+        });
+        const d = await r.json();
+        if (!d.ok) {
+          if (Array.isArray(d.ocupados)) { vendidos = new Set(d.ocupados.map(Number)); pintarGrid(); }
+          if (d.choque && d.choque.length) {
+            $("err").textContent = "Alguien acaba de apartar el " + d.choque.join(", ") + ". Cierra y escoge otro número.";
+            $("chips").innerHTML = lista().map(x => '<span class="chip">' + x + '</span>').join("");
+          } else {
+            $("err").textContent = "No se pudo apartar. Intenta otra vez.";
+          }
+          return;
+        }
+        if (Array.isArray(d.ocupados)) vendidos = new Set(d.ocupados.map(Number));
+      } catch (err) {
+        $("err").textContent = "No hay conexión. Revisa tu internet e intenta otra vez.";
+        return;
+      } finally {
+        enviando = false; btn.disabled = false; btn.lastChild.textContent = " Continuar";
+      }
+    }
+
+    let msg = "Hola Natalia, " + (SCRIPT_URL ? "aparté " : "quiero apartar ") + (nums.length === 1 ? "el número " : "los números ") + nums.join(", ") +
       " de la Gran Rifa Navideña.\nNombre: " + nombre;
     if (cel) msg += "\nCelular: " + cel;
     msg += "\nTotal: " + total + ". Ya te envío el comprobante de Nequi.";
-    const url = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg);
-    $("linkWa").href = url;
+    $("linkWa").href = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg);
     $("totalListo").textContent = total;
+    $("textoListo").textContent = SCRIPT_URL
+      ? (nums.length === 1 ? "Tu número " : "Tus números ") + nums.join(", ") + (nums.length === 1 ? " quedó apartado." : " quedaron apartados.") + " Toca el botón verde para avisarle a Natalia por WhatsApp."
+      : "Toca el botón verde para enviarle tu mensaje a Natalia por WhatsApp. El mensaje ya va escrito con tu nombre y tus números.";
     $("paso1").hidden = true; $("paso2").hidden = false;
     $("tituloListo").focus();
+    elegidos.clear();
+    pintarGrid();
   });
 
-  $("terminar").addEventListener("click", () => {
-    elegidos.clear();
-    grid.querySelectorAll('.num[aria-pressed="true"]').forEach(b => {
-      b.setAttribute("aria-pressed","false");
-      b.setAttribute("aria-label","Número " + b.textContent + ", libre");
-    });
-    pintarBarra(); cerrar();
-  });
+  $("terminar").addEventListener("click", () => { elegidos.clear(); pintarGrid(); $("nombre").value = ""; $("cel").value = ""; cerrar(); });
 
   $("copiarNequi").addEventListener("click", async () => {
     try { await navigator.clipboard.writeText("3118098076"); $("copiarNequi").textContent = "Copiado"; $("avisoCopia").textContent = "Número de Nequi copiado"; }
-    catch { $("copiarNequi").textContent = "3118098076"; }
+    catch (e) { $("copiarNequi").textContent = "3118098076"; }
     setTimeout(() => $("copiarNequi").textContent = "Copiar número", 2000);
   });
 </script>
