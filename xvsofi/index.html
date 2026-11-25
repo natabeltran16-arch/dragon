@@ -50,7 +50,7 @@
 
   /* contenido de la invitación */
   .contenido{
-    position:absolute; inset:9% 11% 14% 11%; display:flex; flex-direction:column;
+    position:absolute; inset:8.5% 11% 9% 11%; display:flex; flex-direction:column;
     align-items:center; justify-content:space-between; text-align:center;
     opacity:0; transition:opacity 1s ease .9s; pointer-events:none;
   }
@@ -66,8 +66,8 @@
   .lugar span{display:block; font-style:italic; font-size:4.6cqw}
   .cierre{font-style:italic; font-size:4.4cqw; line-height:1.25; margin:0; color:#3a1610}
   .firma{font-family:"Great Vibes",cursive; font-size:9cqw; line-height:1; margin:0}
-  .vestuario{font-size:.95rem; letter-spacing:.12em; white-space:nowrap; text-transform:uppercase; margin:0 0 4px; color:#e8d3b4; text-align:center}
-  .vestuario::before,.vestuario::after{content:"\2766"; color:#b3262d; margin:0 .6em; letter-spacing:0}
+  .vestuario{font-size:3.1cqw; letter-spacing:.06em; text-transform:uppercase; margin:0; color:#5a1a12; line-height:1.25}
+  .vestuario span{display:block; font-family:"Great Vibes",cursive; text-transform:none; letter-spacing:0; font-size:7cqw; color:#1d110b; line-height:1}
 
   /* portada */
   .portada{position:absolute; inset:0; pointer-events:none; transition:opacity .6s ease .5s}
@@ -167,6 +167,7 @@
         <p class="fecha">Sábado, 19 de diciembre<span>de 2026 a las 8:00 p.m.</span></p>
         <p class="lugar">Galán<span>Cra. 65 # 2C-37<br>Bogotá, D.C.</span></p>
         <p class="cierre">¡Tu presencia hará de mi fiesta<br>un momento inolvidable!</p>
+        <p class="vestuario">Código de vestimenta<span>Semiformal</span></p>
       </div>
 
       <div class="portada" aria-hidden="true">
@@ -210,7 +211,6 @@
   </div>
 
   <div class="acciones">
-    <p class="vestuario">Semi-formal dress code</p>
     <button class="btn" id="btnConfirmar" type="button">Confirmar asistencia</button>
     <a class="enlace" id="mapa" target="_blank" rel="noopener">Cómo llegar</a>
   </div>
