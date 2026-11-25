@@ -383,8 +383,7 @@
         await new Promise(res => setTimeout(res, 1800));
         const despues = await total();
         if (antes !== null && despues > antes) { exito(false); }
-        else if (antes !== null) { exito(true); }
-        else { throw new Error("sin verificación"); }
+        else { throw new Error("no se registró"); }
       } catch (err2) {
         console.error(detalle, err2);
         $("error").textContent = "No se pudo confirmar. Intenta otra vez en un momento. (" + detalle + ")";
