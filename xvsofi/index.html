@@ -137,11 +137,13 @@
   .error{color:#8a0c12; min-height:1.3em; font-size:.95rem; margin:6px 0 4px}
   .fila{display:flex; flex-direction:column; gap:8px; margin-top:8px}
   .btn.sec{background:transparent; color:#2a1a12; border:1px solid #6b4a32; box-shadow:none}
-  .musica{width:min(94vw,460px);margin-top:10px;text-align:center}
-  .musica-titulo{color:#e8d3b4;font-style:italic;font-size:1rem;margin:0 0 8px}
-  .musica-titulo::before{content:"\266B  ";color:#c9343b}
-  .musica-video{position:relative;width:100%;aspect-ratio:16/9;border:1px solid #c79a6b;border-radius:6px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5);background:#000}
-  .musica-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .btn-musica{position:fixed;right:16px;bottom:16px;z-index:15;width:52px;height:52px;border-radius:50%;
+    border:1px solid #c79a6b;background:linear-gradient(180deg,#a3161d,#6e0b10);color:#f7e7cf;font-size:1.5rem;cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,0,0,.5)}
+  .btn-musica[aria-pressed="true"]{animation:giro 6s linear infinite}
+  .btn-musica[aria-pressed="false"]{opacity:.65;text-decoration:line-through}
+  .btn-musica:focus-visible{outline:3px solid #f0d7a8;outline-offset:3px}
+  @keyframes giro{to{transform:rotate(360deg)}}
   .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
   @media (prefers-reduced-motion: reduce){
     *{animation:none!important; transition-duration:.01s!important; transition-delay:0s!important}
@@ -212,11 +214,10 @@
     <p class="vestuario">Semi-formal dress code</p>
     <button class="btn" id="btnConfirmar" type="button">Confirmar asistencia</button>
     <a class="enlace" id="mapa" target="_blank" rel="noopener">Cómo llegar</a>
-    <div class="musica" id="musica" hidden>
-      <p class="musica-titulo">Happy Together · The Turtles</p>
-      <div class="musica-video" id="musicaVideo"></div>
-    </div>
   </div>
+
+  <audio id="cancion" src="cancion.mp3" loop preload="auto"></audio>
+  <button class="btn-musica" id="btnMusica" type="button" aria-label="Pausar música" aria-pressed="true" hidden>&#9835;</button>
 
   <div class="fondo" id="fondo">
     <div class="ventana" role="dialog" aria-modal="true" aria-labelledby="tituloConf">
@@ -318,16 +319,21 @@
   })();
 
   // Abrir la invitación
-  function ponerMusica() {
-    if ($("musicaVideo").firstChild) return;
-    const f = document.createElement("iframe");
-    f.src = "https://www.youtube-nocookie.com/embed/tZwWajdtWKQ?autoplay=1&playsinline=1&rel=0";
-    f.title = "Happy Together, The Turtles";
-    f.allow = "autoplay; encrypted-media; picture-in-picture";
-    f.allowFullscreen = true;
-    $("musicaVideo").appendChild(f);
-    $("musica").hidden = false;
+  const cancion = $("cancion");
+  function estadoMusica() {
+    const suena = !cancion.paused;
+    $("btnMusica").setAttribute("aria-pressed", suena ? "true" : "false");
+    $("btnMusica").setAttribute("aria-label", suena ? "Pausar música" : "Reproducir música");
   }
+  function ponerMusica() {
+    cancion.volume = 0.8;
+    const p = cancion.play();
+    if (p && p.catch) p.catch(() => {});
+    $("btnMusica").hidden = false;
+  }
+  cancion.addEventListener("play", estadoMusica);
+  cancion.addEventListener("pause", estadoMusica);
+  $("btnMusica").addEventListener("click", () => { if (cancion.paused) cancion.play().catch(() => {}); else cancion.pause(); });
 
   function abrir() {
     if (document.body.classList.contains("abierta")) return;
