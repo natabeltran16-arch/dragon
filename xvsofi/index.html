@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XV SOFI</title>
+<meta name="description" content="Toca para abrir tu invitación">
+<meta property="og:type" content="website">
+<meta property="og:title" content="XV SOFI">
+<meta property="og:description" content="Toca para abrir tu invitación">
+<meta property="og:url" content="https://natabeltran16-arch.github.io/dragon/xvsofi/">
+<meta property="og:image" content="https://natabeltran16-arch.github.io/dragon/xvsofi/portada.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  @font-face{font-family:"Great Vibes";src:url("GreatVibes-Regular.woff2") format("woff2");font-display:swap}
+  @font-face{font-family:"IM Fell English";src:url("IMFeENrm28P.woff2") format("woff2");font-style:normal;font-display:swap}
+  @font-face{font-family:"IM Fell English";src:url("IMFeENit28P.woff2") format("woff2");font-style:italic;font-display:swap}
+  :root{
+    --papel:#d9c3a5; --tinta:#2a1a12; --vino:#7d0d12; --rojo:#a3161d;
+    --ar: 1027 / 1650;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh; font-family:"IM Fell English",Georgia,serif; color:var(--tinta);
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(125,13,18,.35), transparent 60%),
+      radial-gradient(ellipse at 50% 100%, rgba(125,13,18,.25), transparent 55%),
+      #120708;
+    display:flex; flex-direction:column; align-items:center; padding:28px 12px 40px;
+    overflow-x:hidden;
+  }
+  .pista{
+    color:#e8d3b4; font-style:italic; font-size:1.05rem; text-align:center; margin:0 0 14px;
+    letter-spacing:.02em; transition:opacity .6s;
+  }
+  .escena{perspective:1400px; width:min(94vw, 460px, calc((100svh - 110px) * 1027 / 1650));}
+  body.abierta .escena{width:min(94vw, 460px)}
+  .tarjeta{
+    position:relative; width:100%; aspect-ratio:var(--ar); container-type:inline-size;
+    background:
+      url("marco.webp") center/100% 100% no-repeat,
+      radial-gradient(ellipse at 50% 45%, #e3cfb2 0%, #d6bf9f 60%, #c7ad88 100%);
+    box-shadow:0 18px 50px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.4);
+    border-radius:4px;
+  }
+
+  /* contenido de la invitación */
+  .contenido{
+    position:absolute; inset:9% 11% 7% 11%; display:flex; flex-direction:column;
+    align-items:center; justify-content:space-between; text-align:center;
+    opacity:0; transition:opacity 1s ease .9s; pointer-events:none;
+  }
+  body.abierta .contenido{opacity:1; pointer-events:auto}
+  .intro{font-style:italic; font-size:4.5cqw; line-height:1.25; margin:0}
+  .nombre{font-family:"Great Vibes",cursive; font-weight:400; font-size:19cqw; line-height:1; margin:.5cqw 0 0; color:#1d110b}
+  .quince{font-family:"Great Vibes",cursive; font-size:10cqw; line-height:1; margin:0; color:#1d110b}
+  .divisor{width:46cqw; height:4cqw; margin:1cqw auto}
+  .texto{font-style:italic; font-size:3.95cqw; line-height:1.32; margin:0}
+  .fecha{font-size:5.4cqw; line-height:1.2; margin:0}
+  .fecha span{display:block; font-style:italic; font-size:4.6cqw}
+  .lugar{font-size:5.2cqw; line-height:1.2; margin:0}
+  .lugar span{display:block; font-style:italic; font-size:4.6cqw}
+  .cierre{font-style:italic; font-size:4.4cqw; line-height:1.25; margin:0; color:#3a1610}
+  .firma{font-family:"Great Vibes",cursive; font-size:9cqw; line-height:1; margin:0}
+  .vestuario{font-size:.95rem; letter-spacing:.12em; white-space:nowrap; text-transform:uppercase; margin:0 0 4px; color:#e8d3b4; text-align:center}
+  .vestuario::before,.vestuario::after{content:"\2766"; color:#b3262d; margin:0 .6em; letter-spacing:0}
+
+  /* portada */
+  .portada{position:absolute; inset:0; pointer-events:none; transition:opacity .6s ease .5s}
+  body.abierta .portada{opacity:0}
+  .mono-arriba,.mono-abajo{position:absolute; left:0; right:0; text-align:center; color:#1d110b}
+  .mono-arriba{top:10%; font-family:"Great Vibes",cursive; font-size:12cqw; line-height:1}
+  .mono-abajo{bottom:9%; font-size:4.2cqw; letter-spacing:.25em; text-transform:uppercase}
+  .mono-abajo b{display:block; font-family:"Great Vibes",cursive; font-weight:400; font-size:13cqw; line-height:.9; letter-spacing:0; text-transform:none}
+
+  .puerta{position:absolute; top:0; bottom:0; width:50%; transition:transform 1.6s cubic-bezier(.6,.05,.25,1) .35s; z-index:3;}
+  .puerta svg{width:100%; height:100%; display:block; overflow:visible; filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+  .puerta.izq{left:0; transform-origin:left center}
+  .puerta.der{right:0; transform-origin:right center}
+  .puerta.der svg{transform:scaleX(-1)}
+  body.abierta .puerta.izq{transform:rotateY(-112deg)}
+  body.abierta .puerta.der{transform:rotateY(112deg)}
+  body.oculta .puerta{display:none}
+
+  .sello{
+    position:absolute; left:50%; top:50%; width:30cqw; height:30cqw; transform:translate(-50%,-50%);
+    border:0; padding:0; background:none; cursor:pointer; z-index:4; border-radius:50%;
+    animation:latido 2.2s ease-in-out infinite;
+    transition:transform .5s ease, opacity .5s ease;
+  }
+  .sello svg{width:100%; height:100%; display:block; filter:drop-shadow(0 4px 6px rgba(0,0,0,.55))}
+  .sello:focus-visible{outline:3px solid #f0d7a8; outline-offset:4px}
+  body.abierta .sello{animation:none; transform:translate(-50%,-50%) scale(1.5); opacity:0; pointer-events:none}
+  @keyframes latido{
+    0%,100%{transform:translate(-50%,-50%) scale(1)}
+    50%{transform:translate(-50%,-50%) scale(1.06)}
+  }
+
+  /* acciones */
+  .acciones{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:22px; opacity:0; transform:translateY(10px); transition:opacity .8s ease 1.8s, transform .8s ease 1.8s; pointer-events:none}
+  body.abierta .acciones{opacity:1; transform:none; pointer-events:auto}
+  .btn{
+    font:1.15rem "IM Fell English",Georgia,serif; letter-spacing:.04em; cursor:pointer;
+    background:linear-gradient(180deg,#a3161d,#6e0b10); color:#f7e7cf; border:1px solid #c79a6b;
+    border-radius:999px; padding:13px 30px; box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.18);
+  }
+  .btn:focus-visible{outline:3px solid #f0d7a8; outline-offset:3px}
+  .enlace{color:#e8d3b4; font-style:italic; font-size:1rem}
+  .enlace:focus-visible{outline:2px solid #f0d7a8}
+
+  /* ventana de confirmación */
+  .fondo{position:fixed; inset:0; background:rgba(10,3,4,.78); display:none; align-items:center; justify-content:center; padding:16px; z-index:20}
+  .fondo.abierto{display:flex}
+  .ventana{
+    position:relative; width:min(100%, 420px); padding:34px 26px 26px; text-align:center;
+    background:radial-gradient(ellipse at 50% 40%, #e6d3b7, #d3bb98 70%, #c4a982);
+    border:2px solid #2a1a12; outline:1px solid #2a1a12; outline-offset:-8px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6); border-radius:3px; overflow:hidden;
+    animation:aparecer .35s ease;
+  }
+  @keyframes aparecer{from{opacity:0; transform:scale(.94)}to{opacity:1; transform:none}}
+  .ventana .rosa{position:absolute; top:-6px; right:-8px; width:92px; pointer-events:none}
+  .ventana h2{font-family:"Great Vibes",cursive; font-weight:400; font-size:2.6rem; margin:0 0 4px; color:#1d110b}
+  .ventana p{margin:0 0 12px; font-style:italic; line-height:1.35}
+  .ventana label.campo{display:block; text-align:left; font-size:1rem; margin:12px 0 6px}
+  .ventana input[type=text]{
+    width:100%; font:1.05rem "IM Fell English",Georgia,serif; padding:11px 12px; color:#1d110b;
+    background:rgba(255,250,240,.75); border:1px solid #6b4a32; border-radius:6px;
+  }
+  .ventana input[type=text]:focus{outline:2px solid var(--vino); border-color:transparent}
+  .check{display:flex; align-items:flex-start; gap:10px; text-align:left; margin:16px 0 6px; font-size:1.05rem; cursor:pointer}
+  .check input{width:22px; height:22px; accent-color:var(--vino); margin:1px 0 0; flex:none}
+  .error{color:#8a0c12; min-height:1.3em; font-size:.95rem; margin:6px 0 4px}
+  .fila{display:flex; flex-direction:column; gap:8px; margin-top:8px}
+  .btn.sec{background:transparent; color:#2a1a12; border:1px solid #6b4a32; box-shadow:none}
+  .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important; transition-duration:.01s!important; transition-delay:0s!important}
+  }
+</style>
+</head>
+<body>
+  <p class="pista" id="pista">Toca la rosa para abrir tu invitación</p>
+
+  <div class="escena">
+    <article class="tarjeta" id="tarjeta" aria-label="Invitación a los quince años de Sofía">
+
+      <div class="contenido" id="contenido" aria-hidden="true">
+        <p class="intro">Dios ha dispuesto este día<br>para celebrar con nosotros</p>
+        <div>
+          <h1 class="nombre">Sofía</h1>
+          <p class="quince">Mis Quince Años</p>
+          <svg class="divisor" viewBox="0 0 200 18" aria-hidden="true"><g fill="none" stroke="#2a1a12" stroke-width="1.4" stroke-linecap="round"><path d="M10 9 H78"/><path d="M122 9 H190"/><path d="M78 9 c6 -6 12 -6 16 0 c-4 6 -10 6 -16 0z"/><path d="M122 9 c-6 -6 -12 -6 -16 0 c4 6 10 6 16 0z"/></g><path d="M100 1 l4 8 -4 8 -4 -8z" fill="#2a1a12"/></svg>
+        </div>
+        <p class="texto">Con la bendición de mi familia, te invito a ser parte de este día tan especial, en el que guardaré los más bonitos recuerdos de mi infancia para dar comienzo a una nueva etapa en mi vida.</p>
+        <p class="fecha">Sábado, 19 de diciembre<span>de 2026 a las 8:00 p.m.</span></p>
+        <p class="lugar">Galán<span>Cra. 65 # 2C-37<br>Bogotá, D.C.</span></p>
+        <p class="cierre">¡Tu presencia hará de mi fiesta<br>un momento inolvidable!</p>
+        <p class="firma">Sofía</p>
+      </div>
+
+      <div class="portada" aria-hidden="true">
+        <div class="mono-arriba">Sofía</div>
+        <div class="mono-abajo"><b>XV</b>años</div>
+      </div>
+
+      <div class="puerta izq" aria-hidden="true"><svg class="encaje" viewBox="0 0 50 160.66" preserveAspectRatio="none"></svg></div>
+      <div class="puerta der" aria-hidden="true"><svg class="encaje" viewBox="0 0 50 160.66" preserveAspectRatio="none"></svg></div>
+
+      <button class="sello" id="sello" type="button" aria-label="Abrir la invitación">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="cera" cx="38%" cy="32%" r="75%">
+              <stop offset="0" stop-color="#d43a40"/>
+              <stop offset=".45" stop-color="#a3161d"/>
+              <stop offset="1" stop-color="#5e070b"/>
+            </radialGradient>
+          </defs>
+          <path fill="url(#cera)" d="M50 3c7 0 9 3 15 4s10 1 13 6 3 8 7 12 6 8 6 13-3 8-2 13 3 9 0 14-7 6-10 10-4 9-9 11-9 0-14 2-8 6-14 6-9-4-14-6-10-1-14-5-3-9-7-12-7-6-8-12 3-8 2-13-4-8-1-13 7-6 9-11 3-9 8-11 9 1 13-2 7-6 12-6z"/>
+          <circle cx="50" cy="50" r="33" fill="none" stroke="#5e070b" stroke-width="2.2" opacity=".7"/>
+          <circle cx="50" cy="50" r="33" fill="none" stroke="#e66a70" stroke-width=".8" opacity=".45" transform="translate(-.8 -.8)"/>
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <g stroke="#e66a70" stroke-width="1.4" opacity=".5" transform="translate(-.9 -.9)">
+              <path d="M50 46c3-2 6 1 4 4-2 4-9 3-10-2-1-6 6-10 11-8 6 2 8 10 4 15-5 6-16 5-19-3-3-9 4-17 13-17"/>
+              <path d="M34 50c-2 10 5 18 16 18s18-8 16-18"/>
+              <path d="M38 62c4 6 8 8 12 8s8-2 12-8"/>
+            </g>
+            <g stroke="#4e0509" stroke-width="2.1">
+              <path d="M50 46c3-2 6 1 4 4-2 4-9 3-10-2-1-6 6-10 11-8 6 2 8 10 4 15-5 6-16 5-19-3-3-9 4-17 13-17"/>
+              <path d="M34 50c-2 10 5 18 16 18s18-8 16-18"/>
+              <path d="M38 62c4 6 8 8 12 8s8-2 12-8"/>
+              <path d="M50 70v11"/>
+              <path d="M50 77c-5-2-9-1-12 2 5 2 9 1 12-2z"/>
+              <path d="M50 75c5-2 9-1 12 2-5 2-9 1-12-2z"/>
+            </g>
+          </g>
+        </svg>
+      </button>
+    </article>
+  </div>
+
+  <div class="acciones">
+    <p class="vestuario">Semi-formal dress code</p>
+    <button class="btn" id="btnConfirmar" type="button">Confirmar asistencia</button>
+    <a class="enlace" id="mapa" target="_blank" rel="noopener">Cómo llegar</a>
+  </div>
+
+  <div class="fondo" id="fondo">
+    <div class="ventana" role="dialog" aria-modal="true" aria-labelledby="tituloConf">
+      <img class="rosa" src="rosa.webp" alt="">
+      <form id="form" novalidate>
+        <div id="paso1">
+          <h2 id="tituloConf">Confirmación</h2>
+          <p>Mis Quince Años · Sofía</p>
+          <label class="campo" for="nombre">Nombre y apellido</label>
+          <input type="text" id="nombre" autocomplete="name" required>
+          <label class="check"><input type="checkbox" id="acepto"> <span>Confirmo la asistencia al evento</span></label>
+          <p class="error" id="error" role="alert"></p>
+          <div class="fila">
+            <button class="btn" type="submit" id="btnEnviar">Confirmar</button>
+            <button class="btn sec" type="button" id="cerrar">Volver</button>
+          </div>
+        </div>
+        <div id="paso2" hidden>
+          <h2 tabindex="-1" id="tituloGracias">Gracias</h2>
+          <p id="textoGracias"></p>
+          <div class="fila">
+            <button class="btn" type="button" id="otra">Confirmar a otra persona</button>
+            <button class="btn sec" type="button" id="listo">Volver a la invitación</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script>
+  // URL de la aplicación web de Google Apps Script (termina en /exec).
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyM_x57PX1sjV21eVCGz5b7K9r_iqiFi8BN2KR7J9Z48rwiNmkdGOrYKwBcZdzJOkAE8A/exec";
+  const LUGAR_MAPA = "Carrera 65 # 2C-37, Bogotá";
+
+  const $ = id => document.getElementById(id);
+  $("mapa").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(LUGAR_MAPA);
+
+  // Encaje de las puertas
+  (function dibujarEncaje() {
+    const W = 50, H = 160.66;
+    const xBorde = y => 27 + 23 * Math.pow(Math.sin(Math.PI * y / H), 2.2);
+    const paso = 3.6, pts = [];
+    for (let y = 0; y <= H + 0.01; y += paso) pts.push([xBorde(y), Math.min(y, H)]);
+    if (pts[pts.length - 1][1] < H) pts.push([xBorde(H), H]);
+
+    let d = "M0 0 L" + pts[0][0].toFixed(2) + " 0";
+    let picots = "", anillos = "";
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+      const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy), r = len / 2 * 1.02;
+      d += " A" + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " + x2.toFixed(2) + " " + y2.toFixed(2);
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, nx = dy / len, ny = -dx / len;
+      picots += '<circle cx="' + (mx + nx * (r + 0.9)).toFixed(2) + '" cy="' + (my + ny * (r + 0.9)).toFixed(2) + '" r=".55"/>';
+      anillos += '<circle cx="' + (mx - nx * 2.6).toFixed(2) + '" cy="' + (my - ny * 2.6).toFixed(2) + '" r="1.15"/>';
+    }
+    d += " L0 " + H + " Z";
+    const banda = "M" + pts.map(p => (p[0] - 1.1).toFixed(2) + " " + p[1].toFixed(2)).join(" L");
+    const banda2 = "M" + pts.map(p => (p[0] - 4.4).toFixed(2) + " " + p[1].toFixed(2)).join(" L");
+
+    const svg = `
+      <defs>
+        <pattern id="red" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <path d="M0 0H1.6M0 0V1.6" stroke="#0a0a0a" stroke-width=".18" fill="none"/>
+        </pattern>
+        <pattern id="motivo" width="16" height="16" patternUnits="userSpaceOnUse">
+          <g fill="none" stroke="#0a0a0a" stroke-linecap="round">
+            ${[0,45,90,135,180,225,270,315].map(a => `<path d="M8 6.6c.9-1.2.9-3 0-4.2c-.9 1.2-.9 3 0 4.2z" stroke-width=".38" transform="rotate(${a} 8 8)"/>`).join("")}
+            <circle cx="8" cy="8" r="1.1" stroke-width=".4"/>
+            <circle cx="8" cy="8" r="6.4" stroke-width=".22" stroke-dasharray=".2 .9"/>
+            ${[0,90,180,270].map(a => `<path d="M8 8m4.6 4.6c1.2-.2 2.2.4 2.7 1.4c-1.1.3-2.2-.1-2.7-1.4z" stroke-width=".32" transform="rotate(${a} 8 8)"/>`).join("")}
+            <path d="M0 8c1.5-1.4 1.5-2.6 0-4M16 8c-1.5-1.4-1.5-2.6 0-4M0 8c1.5 1.4 1.5 2.6 0 4M16 8c-1.5 1.4-1.5 2.6 0 4" stroke-width=".3"/>
+          </g>
+          <g fill="#0a0a0a">
+            <circle cx="8" cy="8" r=".45"/>
+            <circle cx="0" cy="0" r=".7"/><circle cx="16" cy="0" r=".7"/><circle cx="0" cy="16" r=".7"/><circle cx="16" cy="16" r=".7"/>
+          </g>
+        </pattern>
+        <pattern id="motivo2" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="translate(8 8)">
+          <g fill="none" stroke="#0a0a0a" stroke-width=".3">
+            <circle cx="8" cy="8" r="2.2"/>
+            ${[0,60,120,180,240,300].map(a => `<ellipse cx="8" cy="5" rx=".55" ry="1" transform="rotate(${a} 8 8)"/>`).join("")}
+          </g>
+          <circle cx="8" cy="8" r=".5" fill="#0a0a0a"/>
+        </pattern>
+        <clipPath id="forma"><path d="${d}"/></clipPath>
+      </defs>
+      <g clip-path="url(#forma)">
+        <rect width="${W}" height="${H}" fill="rgba(10,10,10,.06)"/>
+        <rect width="${W}" height="${H}" fill="url(#red)" opacity=".55"/>
+        <rect width="${W}" height="${H}" fill="url(#motivo)"/>
+        <rect width="${W}" height="${H}" fill="url(#motivo2)"/>
+      </g>
+      <path d="${d}" fill="none" stroke="#0a0a0a" stroke-width=".5"/>
+      <path d="${banda}" fill="none" stroke="#0a0a0a" stroke-width="1.3"/>
+      <path d="${banda2}" fill="none" stroke="#0a0a0a" stroke-width=".5"/>
+      <g fill="#0a0a0a">${picots}</g>
+      <g fill="none" stroke="#0a0a0a" stroke-width=".4">${anillos}</g>`;
+    document.querySelectorAll(".encaje").forEach(s => s.innerHTML = svg);
+  })();
+
+  // Abrir la invitación
+  function abrir() {
+    if (document.body.classList.contains("abierta")) return;
+    document.body.classList.add("abierta");
+    $("pista").style.opacity = "0";
+    $("contenido").setAttribute("aria-hidden", "false");
+    setTimeout(() => { document.body.classList.add("oculta"); $("sello").hidden = true; $("pista").hidden = true; }, 2200);
+  }
+  $("sello").addEventListener("click", abrir);
+  if (location.hash === "#abierta") { abrir(); }
+
+  // Confirmación
+  let ultimoFoco = null;
+  function abrirVentana() {
+    ultimoFoco = document.activeElement;
+    $("paso1").hidden = false; $("paso2").hidden = true; $("error").textContent = "";
+    $("fondo").classList.add("abierto");
+    setTimeout(() => $("nombre").focus(), 60);
+  }
+  function cerrarVentana() {
+    $("fondo").classList.remove("abierto");
+    if (ultimoFoco) ultimoFoco.focus();
+  }
+  $("btnConfirmar").addEventListener("click", abrirVentana);
+  $("cerrar").addEventListener("click", cerrarVentana);
+  $("listo").addEventListener("click", cerrarVentana);
+  $("otra").addEventListener("click", () => {
+    $("nombre").value = ""; $("acepto").checked = false;
+    $("paso1").hidden = false; $("paso2").hidden = true; $("nombre").focus();
+  });
+  $("fondo").addEventListener("click", e => { if (e.target === $("fondo")) cerrarVentana(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && $("fondo").classList.contains("abierto")) cerrarVentana(); });
+
+  let enviando = false;
+  $("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (enviando) return;
+    const nombre = $("nombre").value.trim().replace(/\s+/g, " ");
+    if (nombre.length < 3) { $("error").textContent = "Escribe tu nombre y apellido."; $("nombre").focus(); return; }
+    if (!$("acepto").checked) { $("error").textContent = "Marca la casilla para confirmar tu asistencia."; $("acepto").focus(); return; }
+    if (!SCRIPT_URL) { $("error").textContent = "La confirmación todavía no está activa. Intenta más tarde."; return; }
+
+    enviando = true;
+    const btn = $("btnEnviar");
+    btn.disabled = true; btn.textContent = "Enviando...";
+    $("error").textContent = "";
+    const cuerpo = JSON.stringify({ nombre });
+    const total = async () => {
+      const r = await fetch(SCRIPT_URL + "?t=" + Date.now());
+      const d = await r.json();
+      return Number(d.total) || 0;
+    };
+    const exito = repetido => {
+      $("textoGracias").textContent = repetido
+        ? nombre + ", tu asistencia ya estaba confirmada. ¡Te esperamos!"
+        : nombre + ", tu asistencia quedó confirmada. ¡Te esperamos!";
+      $("paso1").hidden = true; $("paso2").hidden = false;
+      $("tituloGracias").focus();
+    };
+    let antes = null, detalle = "";
+    try { antes = await total(); } catch (e) { detalle = "lectura: " + e.message; }
+    try {
+      const r = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: cuerpo });
+      const texto = await r.text();
+      let d = null;
+      try { d = JSON.parse(texto); } catch (e) { throw new Error("respuesta " + r.status + ": " + texto.slice(0, 80)); }
+      if (!d.ok) throw new Error(d.error || "respuesta sin ok");
+      exito(d.repetido);
+    } catch (err1) {
+      detalle += (detalle ? " | " : "") + "envío: " + err1.message;
+      try {
+        await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: cuerpo });
+        await new Promise(res => setTimeout(res, 1800));
+        const despues = await total();
+        if (antes !== null && despues > antes) { exito(false); }
+        else { throw new Error("no se registró"); }
+      } catch (err2) {
+        console.error(detalle, err2);
+        $("error").textContent = "No se pudo confirmar. Intenta otra vez en un momento. (" + detalle + ")";
+      }
+    } finally {
+      enviando = false; btn.disabled = false; btn.textContent = "Confirmar";
+    }
+  });
+</script>
+</body>
+</html>
